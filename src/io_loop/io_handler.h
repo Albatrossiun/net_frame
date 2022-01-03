@@ -1,4 +1,6 @@
 #ifndef __my_net_src_io_loop_io_handler__
+#define __my_net_src_io_loop_io_handler__
+
 #include <src/common/common.h>
 #include <src/socket/socket.h>
 #include <atomic>

@@ -7,7 +7,7 @@
 
 namespace my_net {
 
-class TiemTools {
+class TimeTools {
 public:
     // 获取当前时间 单位 秒
     static int64_t GetTimeSec();
