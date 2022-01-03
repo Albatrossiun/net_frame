@@ -1,0 +1,11 @@
+add_subdirectory(common)
+add_subdirectory(thread)
+add_subdirectory(socket)
+add_subdirectory(third)
+add_subdirectory(util)
+add_subdirectory(io_loop)
+
+#add_subdirectory(net)
+#add_subdirectory(third)
+#add_subdirectory(app)
+#add_subdirectory(util)
