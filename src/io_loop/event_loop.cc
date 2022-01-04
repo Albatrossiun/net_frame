@@ -42,7 +42,40 @@ void EventLoop::Run() {
         }
         std::vector<IOHandler*> events;
         int num = _EpollPtr->EpollWait(events, time);
+            
+        for(int i = 0; i < num; i++) {
+            IOHandler* handler = events[i];
+            int event = handler->GetCurrentEvent();
+            if(event | (EPOLLERR | EPOLLHUP)) {
+                event |= (EPOLLIN | EPOLLOUT);
+            }
+            bool ok = false;
+            if(event | EPOLLIN) {
+                ok = handler->DoRead();
+            }
+            if((event | EPOLLOUT) && ok) {
+                handler->DoWrite();
+            }
+        }
+        _TimerPtr->Process();
     }
+    MY_LOG(INFO, "%s", "event loop exit");
+}
+
+bool EventLoop::AddIOEvent(IOHandler* handler) {
+    return _EpollPtr->AddEvent(handler);
+}
+
+bool EventLoop::ModifyIOEvent(IOHandler* handler) {
+    return _EpollPtr->ModifyEvent(handler);
+}
+
+bool EventLoop::AddTimeEvent(TimeItemPtr timeItem, int timeout) {
+    return _TimerPtr->AddTimeItem(timeItem, timeout);
+}
+
+bool EventLoop::DeleteTimeEvent(TimeItemPtr timeItem) {
+    return _TimerPtr->DeleteTimeItem(timeItem);
 }
 
 }

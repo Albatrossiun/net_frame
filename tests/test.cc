@@ -18,10 +18,6 @@ bool DoTest(TestFuncP func, string name) {
 int main() {
     map<string, TestFuncP> TestList;
     TestList["Test ThreadPool"] = &TestThreadPool;
-    // TestList["Test Http Encoder"] = &TestHttpEncoder;
-    // TestList["Test Http Parser"] = &TestHttpParser;
-    // TestList["Test FastText"] = &TestFastText;
-
     for(auto it = TestList.begin(); it != TestList.end(); it++) {
         if(!DoTest(it->second, it->first)) {
             return -1;

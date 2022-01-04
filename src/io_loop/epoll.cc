@@ -95,6 +95,7 @@ int Epoll::EpollWait(std::vector<IOHandler*>& handlers, int timeout)
     handlers.clear();
     int num = epoll_wait(_EpollFd, epollEvents, 1024, timeout);
     if(num < 0) {
+        MY_LOG(ERROR, "epoll wait failed, error [%d]", num);
         return num;
     }
     handlers.resize(num);
