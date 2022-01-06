@@ -5,26 +5,34 @@
 #include <src/io_loop/epoll.h>
 #include <src/io_loop/event_loop.h>
 #include <src/socket/tcp_socket.h>
+#include <src/packet/http_packet.h>
+#include <src/packet/http_encoder.h>
+#include <src/packet/http_parser.h>
+#include <src/handler/http_handler.h>
 
-namespace my_net{
+namespace my_net {
+
+class HttpHandler;
+typedef std::shared_ptr<HttpHandler> HttpHandlerPtr;
 
 class BaseIoHandler : public IOHandler {
+    friend class HttpHandler;
 public:
     class ConnectionTimer : public TimeItem {
     public:
-        ConnectionTimer(Connection* conn)
-            :_Conn(conn)
+        ConnectionTimer(BaseIoHandler* handler)
+            :_handler(handler)
         {}
         void Process() {
-            _Conn->TimeOutProcess();
+            _handler->TimeOutProcess();
         }
     private:
-        Connection* _Conn;    
+        BaseIoHandler* _handler;    
     };
 
     friend class ConnectionTimer;
 
-    enum CONNECTION_STATE {
+    enum CONNECT_STATE {
         CS_NONE,
         CS_CONNECTING, // 正在建立连接
         CS_CONNECTED,  // 成功建立的连接
@@ -54,24 +62,20 @@ protected:
     SocketPtr GetSocket() const { return _SocketPtr; }
     void SetSocket(SocketPtr socketPtr) { _SocketPtr = socketPtr; }
 
-    UserConnection* GetUserConnection() const { return _UserConnectionP; } 
-    void SetUserConnection(UserConnection* userConnectionP);
-    void ClearUserConnection() { _UserConnectionP = NULL; }
+    void SetPacketParser(HttpParserPtr packetParserPtr) { _PacketParserPtr = packetParserPtr; }
+    HttpParserPtr GetPacketParser() const { return _PacketParserPtr; }
 
-    void SetPacketParser(PacketParserPtr packetParserPtr) { _PacketParserPtr = packetParserPtr; }
-    PacketParserPtr GetPacketParser() const { return _PacketParserPtr; }
-
-    void SetPacketEncoder(PacketEncoderPtr packetEncoderPtr) { _PacketEncoderPtr = packetEncoderPtr; }
-    PacketEncoderPtr GetPacketEncoder() const { return _PacketEncoderPtr; }
+    void SetPacketEncoder(HttpEncoderPtr packetEncoderPtr) { _PacketEncoderPtr = packetEncoderPtr; }
+    HttpEncoderPtr GetPacketEncoder() const { return _PacketEncoderPtr; }
 
     std::mutex& GetMutex() { return _Mutex; }
 
     // 设置处理packet的句柄函数
-    void SetPacketHandler(PacketHandler& packetHandler) { _PakcetHandler = packetHandler; }
+    void SetPacketHandler(HttpHandlerPtr handler) { _HttpHandler = handler; }
 
     // 发送数据的函数
-    virtual bool SendPacket(PacketPtr& packet);
-    virtual bool SendPacketWithoutLock(PacketPtr packet);
+    virtual bool SendPacket(HttpPacketPtr& packet);
+    virtual bool SendPacketWithoutLock(HttpPacketPtr packet);
 
     // 建立连接
     virtual bool Connect(size_t timeout);
@@ -83,10 +87,8 @@ protected:
     virtual bool IsConnected();    
     virtual bool IsClosed();
 
-    // 实现父类的虚函数OnRead
-    virtual bool OnRead();
-    // 实现父类的虚函数OnWrite
-    virtual void OnWrite();
+    virtual bool DoRead();
+    virtual bool DoWrite();
 
     // 向_EventLoop中加入超时事件
     bool AddTimeItem(TimeItemPtr timeItem, int timeout);
@@ -100,40 +102,28 @@ protected:
     bool CheckConnectingState();
 
     // 是否在所有的包发送完成后 关闭连接
-    void SetCloseAfterAllPacketSent(bool close) { _CloseAfterSendFinish = close; }
+    void SetCloseAfterAllPacketSent(bool close) { _DoCloseAfterSend = close; }
     
     void ReportErrorAndClose(PROCESS_ERROR pe);
 
-    // 增加'可写'事件处理句柄函数
-    void AddWriteableHandler(WriteableHandler& handler);
-    void AddWriteableHandlerWithOutLock(WriteableHandler&);
-
-    void NotifyWriteable(bool inLock);
-
+    // 释放链接 清理内存
     void Destroy();
     bool ConnectWithoutLock(size_t timeout);
 protected:
-    volatile CONNECTION_STATE _State;
+    volatile CONNECT_STATE _State;
     EventLoopPtr _EventLoopPtr;
     SocketPtr _SocketPtr;
-    UserConnection* _UserConnectionP;
-    PacketParserPtr _PacketParserPtr;
-    PacketEncoderPtr _PacketEncoderPtr;
+    HttpParserPtr _PacketParserPtr;
+    HttpEncoderPtr _PacketEncoderPtr;
     std::shared_ptr<ConnectionTimer> _ConnectionTimerPtr;
-    // 原子变量 int 不需要加锁就可以多线程操作的变量
-    std::atomic<std::uint64_t> _BytesRecv;
-    std::atomic<std::uint64_t> _BytesSend;
 
     std::list<DataBlobPtr> _DataBlobPtrList;
-    std::list<WriteableHandler> _WriteableHandlerList;
 
-    // 用户注册的 用来处理packet的句柄函数
-    PacketHandler _PakcetHandler; 
+    // 读取数据后 交个这个handler处理
+    HttpHandlerPtr _HttpHandler; 
 
     std::mutex _Mutex;
-    bool _CloseAfterSendFinish;
+    bool _DoCloseAfterSend;
 };
-
-
 }
 #endif
