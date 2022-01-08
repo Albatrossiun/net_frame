@@ -48,7 +48,7 @@ protected:// 不允许创建在栈上 必须用指针进行访问
     IOHandler(const IOHandler&&) = delete;
     IOHandler& operator=(const IOHandler&) = delete;
     IOHandler& operator=(const IOHandler&&) = delete;
-private: 
+protected: 
     SocketPtr _Socket;
     int _EopllEventType; // 注册的事件
     int _CurrentEvent; // epoll_wait 得到的事件
