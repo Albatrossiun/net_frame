@@ -28,7 +28,7 @@ public:
 
     void Destroy();
 
-    virtual bool Process(BaseIoHandler* baseIoHander, HttpPacketPtr packet, int error) = 0;
+    virtual bool Process(HttpPacketPtr packet, int error) = 0;
 protected:
     BaseIoHandler* _BaseIOHandler;
     bool _KeepAlive;

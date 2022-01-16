@@ -11,5 +11,6 @@ target_link_libraries (Test
                 pthread
                 my_net_packet
                 my_net_third_http_parser
+                my_net_user
                 )
 

@@ -16,6 +16,7 @@ class HttpHandler;
 typedef std::shared_ptr<HttpHandler> HttpHandlerPtr;
 
 class BaseIoHandler : public IOHandler {
+    friend class AcceptorHandler;
     friend class HttpHandler;
 public:
     class ConnectionTimer : public TimeItem {
@@ -53,7 +54,7 @@ public:
         PE_HTTP_KEEPALIVE_TIMEOUT, // Http长连接超时
         PE_HTTP_IDLE_TIMEOUT, // Http空闲超时
     };
-protected:
+
     BaseIoHandler(EventLoopPtr eventLoopPtr);
     virtual ~BaseIoHandler();
 

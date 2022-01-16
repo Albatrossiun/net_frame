@@ -7,15 +7,15 @@
 
 namespace my_net {
 
-class HttpEncoderFactor{
+class HttpEncoderFactory{
 public:
-    HttpEncoderFactor(bool isResponse);
-    virtual ~HttpEncoderFactor();
+    HttpEncoderFactory(bool isResponse);
+    virtual ~HttpEncoderFactory();
     HttpEncoderPtr CreatePacketEncoder();
 private:
     bool _IsResponse;
 }; 
-typedef std::shared_ptr<HttpEncoderFactor> HttpEncoderFactorPtr;
+typedef std::shared_ptr<HttpEncoderFactory> HttpEncoderFactoryPtr;
 
 }
 

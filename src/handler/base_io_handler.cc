@@ -185,7 +185,7 @@ bool BaseIoHandler::DoRead()
                 break;
             }
             _Mutex.unlock();
-            if(!_HttpHandler->Process(this, packet, pe)) {
+            if(!_HttpHandler->Process(packet, pe)) {
                 userBreak = true;
             } 
             _Mutex.lock();
@@ -294,7 +294,7 @@ void BaseIoHandler::ReportErrorAndClose(PROCESS_ERROR pe) {
     _Mutex.lock();
     _State = CONNECT_STATE::CS_CONNECTING;
     _Mutex.unlock();
-    _HttpHandler->Process(this, NULL, pe);
+    _HttpHandler->Process(NULL, pe);
     Close();
 }
 
