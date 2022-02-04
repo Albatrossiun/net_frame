@@ -55,7 +55,7 @@ private:
     typedef std::shared_ptr<OneRequest> OneRequestPtr;
     std::list<OneRequestPtr> _RequestLists;
 };
-typedef std::shared_ptr<HttpClientHandler> HttpClientConnectionPtr;
+typedef std::shared_ptr<HttpClientHandler> HttpClientHandlerPtr;
 
 }
 
