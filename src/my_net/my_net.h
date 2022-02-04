@@ -13,6 +13,8 @@
 #include <src/my_net/my_net_user_handler.h>
 #include <src/io_loop/event_loop.h>
 #include <src/thread/thread_pool.h>
+#include <src/util/url_tools/addr_parser.h>
+#include <src/handler/acceptor_handler.h>
 
 namespace my_net {
 
@@ -74,6 +76,9 @@ public:
                                  size_t timeout);
 
     AcceptorHandler* CreateAcceptor();
+    
+    bool StartServer(std::string ipAndPort,MyNetUserHandlerPtr handler);
+
 protected:
     MyNetConfig _Config;
     std::vector<EventLoopPtr> _EventLoopPtrVec;

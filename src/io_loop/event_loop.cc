@@ -34,6 +34,7 @@ void EventLoop::Stop() {
 void EventLoop::Run() {
     _Stoped = false;
     while(!_Stoped) {
+        //MY_LOG(DEBUG, "%s", "in event loop, one loop");
         int time = _TimerPtr->GetNetExpireTime() - TimeTools::GetTimeMs();
         if(time <= 0) {
             time = 20;
@@ -42,7 +43,9 @@ void EventLoop::Run() {
         }
         std::vector<IOHandler*> events;
         int num = _EpollPtr->EpollWait(events, time);
-            
+        if(num > 0) {
+            MY_LOG(DEBUG, "get io events [%d]", num);
+        }
         for(int i = 0; i < num; i++) {
             IOHandler* handler = events[i];
             int event = handler->GetCurrentEvent();
@@ -63,6 +66,7 @@ void EventLoop::Run() {
 }
 
 bool EventLoop::AddIOEvent(IOHandler* handler) {
+    MY_LOG(DEBUG, "%s", "add IOEvent");
     return _EpollPtr->AddEvent(handler);
 }
 

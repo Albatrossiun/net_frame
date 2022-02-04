@@ -48,7 +48,8 @@ TcpClientSocketPtr CreateTcpClientSocket(const std::string& remoteSpec,
 };
 
 MyNet::MyNet()
-    :_ThreadPool("transportTP", 0)
+    :_ThreadPool("transportTP", 0),
+     _Running(false)
 {}
 
 MyNet::~MyNet()
@@ -186,9 +187,42 @@ HttpClientHandlerPtr MyNet::CreateConnection(const std::string& remoteSpec,
 }
 
 AcceptorHandler* MyNet::CreateAcceptor() {
-    return new AcceptorHandler(
+    AcceptorHandler* acceptor =  new AcceptorHandler(
         GetOneEventLoop(),
-        GetEventLoopPtrVec()
-    );
+        GetEventLoopPtrVec());
+    return acceptor;
+}
+
+bool MyNet::StartServer(std::string ipAndPort,
+        MyNetUserHandlerPtr handler) {
+        // 创建ListenSocket
+    in_addr_t localAddr = 0;
+    uint16_t localPort = 0;
+    int proto = -1;
+    AddrParser::ParseUrl(ipAndPort, proto, localAddr, localPort);
+    MY_LOG(DEBUG, "local port is [%u]", localPort);
+    int fd = socket(AF_INET, SOCK_STREAM, 0);
+    TcpListenSocketPtr ls(new TcpListenSocket(localAddr, localPort));
+    ls->SetFd(fd);    
+    int enable = 1;
+    ls->SetOption(SO_REUSEADDR, &enable, sizeof(enable));
+    ls->Bind();
+    ls->SetNonBlocking(true);
+    ls->SetCloseExec(true);
+    ls->Listen();
+
+    auto acceptor = new AcceptorHandler(
+        GetOneEventLoop(),
+        GetEventLoopPtrVec());
+    acceptor->SetListenSocket(ls);
+    AcceptorHandler::AcceptorConfig acceptorConfig; 
+    acceptorConfig._PacketHandler = handler;
+    MY_LOG(DEBUG, "[%x]", acceptorConfig._PacketHandler.get());
+    acceptorConfig._KeepAliveTimeout = 0;
+    acceptorConfig._PacketEncoderFactoryPtr = _PacketEncoderFactoryPtr;
+    acceptorConfig._PacketParserFactoryPtr = _PacketParserFactoryPtr;
+    acceptor->Start(acceptorConfig);
+    Start();
+    return true;
 }
 }

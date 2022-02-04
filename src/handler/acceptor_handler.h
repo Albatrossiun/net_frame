@@ -31,7 +31,7 @@ public:
         
         MyNetUserHandlerPtr _PacketHandler;
         HttpEncoderFactoryPtr _PacketEncoderFactoryPtr;
-        HttpParserFactoryPtr _PacketParserFactorPtr;
+        HttpParserFactoryPtr _PacketParserFactoryPtr;
 
         AcceptorConfig()
             :_CloseOnExec(true),

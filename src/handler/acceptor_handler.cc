@@ -19,14 +19,14 @@ bool AcceptorHandler::Start(const AcceptorConfig& config)
 {
     std::unique_lock<std::mutex> lock(_Mutex);
     if(config._PacketEncoderFactoryPtr == NULL or
-        config._PacketParserFactorPtr == NULL or
+        config._PacketParserFactoryPtr == NULL or
         _Socket == NULL) {
         MY_LOG(ERROR, "start failed, get null ptr, "
         "encoder_factory : [%x]"
         " ,parser_factory : [%x]"
         " ,socket : [%s]",
         config._PacketEncoderFactoryPtr.get(),
-        config._PacketParserFactorPtr.get(),
+        config._PacketParserFactoryPtr.get(),
         _Socket.get());    
         return false;
     }
@@ -44,7 +44,7 @@ bool AcceptorHandler::Start(const AcceptorConfig& config)
     if(!ok) {
         MY_LOG(ERROR, "start failed, add [%d] to event_loop failed",
                 _Socket->GetFd());
-        _Config._PacketParserFactorPtr.reset();
+        _Config._PacketParserFactoryPtr.reset();
         _Config._PacketEncoderFactoryPtr.reset();
         return false;
     }
@@ -135,9 +135,7 @@ bool AcceptorHandler::DoRead() {
 
 
         HttpServerHandlerPtr httpServerHandler(new HttpServerHandler(_Config._PacketHandler));
-        if(_Config._KeepAliveTimeout > 0) {
-            httpServerHandler->SetKeepAliveTimeout(_Config._KeepAliveTimeout);
-        }
+
 
 
         EventLoopPtr nextEventLoop = GetNextEventLoopWithOutLock();
@@ -149,14 +147,17 @@ bool AcceptorHandler::DoRead() {
 
         baseIoHandler->_State = BaseIoHandler::CONNECT_STATE::CS_CONNECTED;
         baseIoHandler->SetPacketHandler(httpServerHandler);
-        baseIoHandler->SetPacketParser(_Config._PacketParserFactorPtr->CreatePacketParser());
+        baseIoHandler->SetPacketParser(_Config._PacketParserFactoryPtr->CreatePacketParser());
         baseIoHandler->SetPacketEncoder(_Config._PacketEncoderFactoryPtr->CreatePacketEncoder());
         if(baseIoHandler->_PacketParserPtr == NULL || baseIoHandler->_PacketEncoderPtr == NULL) {
             MY_LOG(ERROR, "%s", "cerate connection faild, new packet encoder or parser faild");
             delete baseIoHandler;
             continue;
         } 
-
+        
+        if(_Config._KeepAliveTimeout > 0) {
+            httpServerHandler->SetKeepAliveTimeout(_Config._KeepAliveTimeout);
+        }
 
         baseIoHandler->_EopllEventType = EPOLLIN | EPOLLOUT;
         nextEventLoop->AddIOEvent(baseIoHandler);
