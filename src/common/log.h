@@ -13,7 +13,7 @@ enum LOG_LEVEL{
 #define INFO LOG_LEVEL::INFO
 #define ERROR LOG_LEVEL::ERROR
 
-#define LEVEL 0
+#define LEVEL 1
 
 #define MY_LOG(level, format, ...) \
     do{ \

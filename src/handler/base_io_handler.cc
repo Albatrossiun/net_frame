@@ -61,7 +61,7 @@ bool BaseIoHandler::SendPacketWithoutLock(HttpPacketPtr packet) {
             break;
         }
         // 发送数据
-        int sendNum = _SocketPtr->Write(dataBlob->GetRestData(), rest);
+        int sendNum = _Socket->Write(dataBlob->GetRestData(), rest);
         // 发送时出错了
         if(sendNum < 0) {
             if(errno != EAGAIN) {
@@ -101,14 +101,14 @@ bool BaseIoHandler::ConnectWithoutLock(size_t timeout) {
         return false;
     }
     // 检查有没有设置socket
-    if(_SocketPtr == NULL) {
+    if(_Socket == NULL) {
         MY_LOG(ERROR, "%s", "connect failed, socketPtr is NULL");
         return false;
     }
 
     // 开始创建连接
     // 默认创建tcp连接
-    TcpClientSocket* socket = dynamic_cast<TcpClientSocket*>(_SocketPtr.get());
+    TcpClientSocket* socket = dynamic_cast<TcpClientSocket*>(_Socket.get());
     if(socket == NULL) {
         MY_LOG(ERROR, "%s", "convert socket to tcp client socket failed");
         return false;
@@ -164,7 +164,7 @@ bool BaseIoHandler::DoRead()
 
     char buff[4096];
     while(_State == CONNECT_STATE::CS_CONNECTED) {
-        int n = _SocketPtr->Read(buff, sizeof(buff));
+        int n = _Socket->Read(buff, sizeof(buff));
         if(n < 0) {
             if(errno != EAGAIN) {
                 char BUFF[1024] = {0};
@@ -243,7 +243,7 @@ bool BaseIoHandler::DoWrite()
                 it = _DataBlobPtrList.erase(it);        
                 break;
             }
-            int n = _SocketPtr->Write(p->GetRestData(), len);
+            int n = _Socket->Write(p->GetRestData(), len);
             // 写失败
             if(n < 0) {
                 if(errno != EAGAIN) {
@@ -308,8 +308,8 @@ void BaseIoHandler::Close()
 void BaseIoHandler::CloseWithoutLock() {
     if (_State != CONNECT_STATE::CS_CLOSED) {
         _State = CONNECT_STATE::CS_CLOSED;
-        if(_SocketPtr != NULL) {
-            _SocketPtr->Close();
+        if(_Socket != NULL) {
+            _Socket->Close();
         }
         if(_ConnectionTimerPtr->GetTime() > 0) {
             _EventLoopPtr->DeleteTimeEvent(_ConnectionTimerPtr);
@@ -336,7 +336,7 @@ bool BaseIoHandler::CheckConnectingState()
         return false;
     }
     int code = 0;
-    if(!_SocketPtr->GetSoError(&code) || code != 0) {
+    if(!_Socket->GetSoError(&code) || code != 0) {
         MY_LOG(DEBUG, "error is [%d]", code);
         return false;
     }

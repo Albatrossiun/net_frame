@@ -60,8 +60,8 @@ public:
 
     EventLoopPtr GetEventLoop() const { return _EventLoopPtr; }
 
-    SocketPtr GetSocket() const { return _SocketPtr; }
-    void SetSocket(SocketPtr socketPtr) { _SocketPtr = socketPtr; }
+    SocketPtr GetSocket() const { return _Socket; }
+    void SetSocket(SocketPtr socketPtr) { _Socket = socketPtr; }
 
     void SetPacketParser(HttpParserPtr packetParserPtr) { _PacketParserPtr = packetParserPtr; }
     HttpParserPtr GetPacketParser() const { return _PacketParserPtr; }
@@ -113,7 +113,7 @@ public:
 protected:
     volatile CONNECT_STATE _State;
     EventLoopPtr _EventLoopPtr;
-    SocketPtr _SocketPtr;
+
     HttpParserPtr _PacketParserPtr;
     HttpEncoderPtr _PacketEncoderPtr;
     std::shared_ptr<ConnectionTimer> _ConnectionTimerPtr;

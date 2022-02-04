@@ -81,6 +81,7 @@ bool AcceptorHandler::SetListenSocket(SocketPtr socket) {
         return false;
     }
     _Socket = socket;
+    MY_LOG(DEBUG, "Listen socketptr [%x]", _Socket.get());
     return true;
 }
 

@@ -82,8 +82,6 @@ protected:
     // 这些EventLoop分给各个连接用
     std::vector<EventLoopPtr> _EventLoopVec;
     mutable size_t _NextIndex; // 在分配eventLoop时 用这个下标进行轮询
-    // 用于accept的socket
-    SocketPtr _Socket;
 };
 typedef std::shared_ptr<AcceptorHandler> AcceptorPtr;
 
