@@ -102,10 +102,6 @@ int main() {
 
     myNet.Init(config);
 
-    // TODO 把创建ListenSocket的操作封装成一个函数
-    // 例如 : TcpListenSocketPtr ls = MyNet::CreateListenSocket;
-   
-
     myNet.StartServer("*:8989", MyNetUserHandlerPtr(new ServerPacketHandler));
 
     // 服务器永不退出

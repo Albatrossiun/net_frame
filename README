@@ -1,7 +1,4 @@
 这是一个C++网络框架
 
 调用方式：
-1.服务端调用方式：继承HttpPacketHandler并实现OnPacket函数 参考server.cc
-2.客户端调用方式：参考main.cc
-
-
+继承MyNetUserHandler并实现Process函数 参考demo_server.cc
